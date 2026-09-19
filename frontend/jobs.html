@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Placement Jobs - Campus Placement</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">Explore Placement Opportunities & Eligibility</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html">🏠 Home</a>
+            <a href="student-dashboard.html">📊 Dashboard</a>
+            <a href="student-profile.html">👤 My Profile</a>
+            <a href="jobs.html" class="active">💼 Available Jobs</a>
+            <a href="applications.html">📝 My Applications</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Student Quick Banner -->
+        <section class="card" style="padding: 1rem 1.5rem; margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    Logged in as: <strong><span id="student-name-header">Student</span></strong>
+                    (<span id="prof-branch">CSE</span> | CGPA: <span id="prof-cgpa">-</span> | Backlogs: <span id="prof-backlogs">0</span>)
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn secondary" onclick="demoLogin('rahul@student.edu', 'student123')" style="font-size: 0.8rem; padding: 0.35rem 0.7rem;">Demo: Rahul (CSE, 8.65)</button>
+                    <button class="btn secondary" onclick="demoLogin('amit@student.edu', 'student123')" style="font-size: 0.8rem; padding: 0.35rem 0.7rem;">Demo: Amit (MECH, 6.40)</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search and Filter Bar -->
+        <section class="card">
+            <h2>🔍 Search & Filter Jobs</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filter-search">Search Role or Company:</label>
+                    <input type="text" id="filter-search" class="form-control" placeholder="e.g. Google, Developer, Analyst...">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filter-branch">Branch Filter:</label>
+                    <select id="filter-branch" class="form-control">
+                        <option value="ALL">All Branches</option>
+                        <option value="CSE">CSE</option>
+                        <option value="IT">IT</option>
+                        <option value="ECE">ECE</option>
+                        <option value="MECH">MECH</option>
+                        <option value="CIVIL">CIVIL</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filter-eligibility">Eligibility:</label>
+                    <select id="filter-eligibility" class="form-control">
+                        <option value="all">All Jobs</option>
+                        <option value="eligible">Only Eligible For Me</option>
+                        <option value="applied">Already Applied</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Jobs Listing -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>💼 Placement Openings (<span id="jobs-count">0</span>)</h2>
+            </div>
+            <div id="jobs-list-container">
+                <p>Loading placement drives...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Placement Openings</p>
+        </div>
+    </footer>
+
+    <script src="js/student.js"></script>
+</body>
+</html>

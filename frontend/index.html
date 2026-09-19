@@ -3,101 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Placement Management System</title>
+    <title>Campus Placement Management System - Student Portal</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header class="header">
         <div class="container">
             <h1>Campus Placement Management System</h1>
-            <p class="subtitle">Phase 3: Backend REST APIs & MySQL Integration</p>
+            <p class="subtitle">Phase 5: Complete Student Portal & Eligibility Engine</p>
         </div>
     </header>
 
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html" class="active">🏠 Home</a>
+            <a href="student-dashboard.html">📊 Dashboard</a>
+            <a href="student-profile.html">👤 My Profile</a>
+            <a href="jobs.html">💼 Available Jobs</a>
+            <a href="applications.html">📝 My Applications</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
     <main class="container">
-        <!-- 1. Backend Server Status Card -->
-        <section class="card">
-            <h2>1. Backend Server Status</h2>
-            <p>Checks the connection to the Express.js backend: <code>GET /api/health</code></p>
-            
-            <div id="status-container" class="status-box pending">
-                <span class="status-dot"></span>
-                <span id="status-text">Checking server status...</span>
-            </div>
-
-            <div class="response-box">
-                <label for="raw-response">Server Response:</label>
-                <pre id="raw-response">Waiting for server response...</pre>
-            </div>
-
-            <button id="refresh-btn" class="btn">Check Server Again</button>
-        </section>
-
-        <!-- 2. MySQL Database Status Card -->
-        <section class="card">
-            <h2>2. MySQL Database Connection Status</h2>
-            <p>Checks the MySQL connection pool and fetches tables: <code>GET /api/db-test</code></p>
-            
-            <div id="db-status-container" class="status-box pending">
-                <span class="status-dot"></span>
-                <span id="db-status-text">Checking database connection...</span>
-            </div>
-
-            <div class="response-box">
-                <label for="db-raw-response">Database Response & Detected Tables:</label>
-                <pre id="db-raw-response">Waiting for database response...</pre>
-            </div>
-
-            <button id="db-refresh-btn" class="btn">Test DB Connection Again</button>
-        </section>
-
-        <!-- 3. Phase 3 REST API Quick Explorer Card -->
-        <section class="card">
-            <h2>3. Phase 3 REST API Interactive Explorer</h2>
-            <p>Click any button below to test live REST API communication with MySQL:</p>
-            
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                <button id="btn-get-companies" class="btn">GET /api/companies</button>
-                <button id="btn-get-jobs" class="btn">GET /api/jobs</button>
-                <button id="btn-get-student" class="btn">GET /api/students/2</button>
-                <button id="btn-get-apps" class="btn">GET /api/applications/student/2</button>
-            </div>
-
-            <div class="response-box">
-                <label for="api-explorer-response">REST API Output (<span id="api-endpoint-label">None selected</span>):</label>
-                <pre id="api-explorer-response">Click one of the buttons above to query the REST API.</pre>
+        <!-- 1. System Health & DB Quick Indicator -->
+        <section class="card" style="padding: 1rem 1.5rem; margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span id="server-status-dot" class="status-dot" style="background:#ffc107;"></span>
+                    <strong id="server-status-text" style="font-size: 0.9rem;">Checking Server...</strong>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span id="db-status-dot" class="status-dot" style="background:#ffc107;"></span>
+                    <strong id="db-status-text" style="font-size: 0.9rem;">Checking MySQL...</strong>
+                </div>
             </div>
         </section>
 
-        <!-- 4. REST APIs List Card -->
+        <!-- 2. Student Switcher / Session Bar -->
         <section class="card">
-            <h2>Phase 3 Implemented REST APIs</h2>
-            <ul class="feature-list">
-                <li><span class="badge info">POST</span> <code>/api/students</code> - Register student with profile</li>
-                <li><span class="badge success">GET</span> <code>/api/students/:id</code> - Get student details by ID</li>
-                <li><span class="badge success">PUT</span> <code>/api/students/:id</code> - Update student profile details</li>
-                <li><span class="badge success">GET</span> <code>/api/companies</code> - Get all participating companies</li>
-                <li><span class="badge info">POST</span> <code>/api/companies</code> - Create a new company record</li>
-                <li><span class="badge success">PUT</span> <code>/api/companies/:id</code> - Update company details</li>
-                <li><span class="badge danger" style="background:#fce8e6; color:#c5221f;">DELETE</span> <code>/api/companies/:id</code> - Delete company safely</li>
-                <li><span class="badge success">GET</span> <code>/api/jobs</code> - Get all job openings with company joins</li>
-                <li><span class="badge success">GET</span> <code>/api/jobs/:id</code> - Get single job details by ID</li>
-                <li><span class="badge info">POST</span> <code>/api/jobs</code> - Post new job with eligibility criteria</li>
-                <li><span class="badge success">PUT</span> <code>/api/jobs/:id</code> - Update job opening details</li>
-                <li><span class="badge danger" style="background:#fce8e6; color:#c5221f;">DELETE</span> <code>/api/jobs/:id</code> - Delete job opening</li>
-                <li><span class="badge info">POST</span> <code>/api/applications</code> - Submit job application</li>
-                <li><span class="badge success">GET</span> <code>/api/applications/student/:studentId</code> - Student application status</li>
-                <li><span class="badge success">GET</span> <code>/api/applications/job/:jobId</code> - Job applicant listings</li>
-            </ul>
+            <h2>🎓 Select Active Student Profile</h2>
+            <p>Switch between demo students to test different eligibility outcomes:</p>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                <button id="btn-student-rahul" class="btn">
+                    👤 Rahul Sharma (CSE, 8.65 CGPA, 0 Backlogs) - High Eligibility
+                </button>
+                <button id="btn-student-amit" class="btn secondary">
+                    👤 Amit Verma (MECH, 6.40 CGPA, 2 Backlogs) - Restricted Eligibility
+                </button>
+                <button id="btn-student-priya" class="btn secondary">
+                    👤 Priya Patel (IT, 7.80 CGPA, 0 Backlogs)
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. Student Dashboard & Profile -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <h2>📊 Student Dashboard: <span id="student-display-name">Loading...</span></h2>
+                <button id="btn-toggle-edit-profile" class="btn secondary" style="font-size: 0.82rem; padding: 0.4rem 0.8rem;">
+                    ✏️ Edit Profile
+                </button>
+            </div>
+
+            <!-- Profile Summary Box -->
+            <div id="student-profile-box" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 1rem; margin: 1rem 0;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; font-size: 0.92rem;">
+                    <div><strong>Roll Number:</strong> <span id="prof-roll">-</span></div>
+                    <div><strong>Branch:</strong> <span id="prof-branch" class="badge info">-</span></div>
+                    <div><strong>CGPA:</strong> <span id="prof-cgpa" style="font-weight:bold; color:#1e3c72;">-</span></div>
+                    <div><strong>Active Backlogs:</strong> <span id="prof-backlogs">-</span></div>
+                    <div><strong>Email:</strong> <span id="prof-email">-</span></div>
+                    <div><strong>Phone:</strong> <span id="prof-phone">-</span></div>
+                </div>
+            </div>
+
+            <!-- Edit Profile Form (Hidden by default) -->
+            <form id="edit-profile-form" style="display: none; background: #ffffff; border: 1px solid #1e3c72; border-radius: 6px; padding: 1.25rem; margin: 1rem 0;">
+                <h3 style="font-size: 1.05rem; margin-bottom: 0.75rem; color: #1e3c72;">Update Academic Profile</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="input-branch">Branch:</label>
+                        <select id="input-branch" class="form-control">
+                            <option value="CSE">CSE</option>
+                            <option value="IT">IT</option>
+                            <option value="ECE">ECE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="CIVIL">CIVIL</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-cgpa">CGPA (0.00 - 10.00):</label>
+                        <input type="number" step="0.01" min="0" max="10" id="input-cgpa" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-backlogs">Backlogs:</label>
+                        <input type="number" min="0" max="10" id="input-backlogs" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-phone">Phone:</label>
+                        <input type="text" id="input-phone" class="form-control">
+                    </div>
+                </div>
+                <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn success">Save Changes</button>
+                    <button type="button" id="btn-cancel-edit" class="btn secondary">Cancel</button>
+                </div>
+                <div id="edit-profile-msg" style="margin-top: 0.5rem; font-size: 0.88rem;"></div>
+            </form>
+
+            <!-- Dashboard Stats Counters -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div id="stat-total-apps" class="number">0</div>
+                    <div class="label">Total Applied</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-shortlisted" class="number" style="color: #198754;">0</div>
+                    <div class="label">Shortlisted</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-pending" class="number" style="color: #ffc107;">0</div>
+                    <div class="label">Under Review</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-rejected" class="number" style="color: #dc3545;">0</div>
+                    <div class="label">Rejected</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Available Jobs & Eligibility Checker -->
+        <section class="card">
+            <h2>💼 Available Campus Placement Jobs</h2>
+            <p>Browse placement openings, check your eligibility in real time, and apply directly:</p>
+
+            <div id="jobs-container">
+                <p>Loading placement jobs...</p>
+            </div>
+        </section>
+
+        <!-- 5. My Applications History & Live Status -->
+        <section class="card">
+            <h2>📝 My Application History & Live Status</h2>
+            <p>Track your submitted applications and selection status:</p>
+
+            <div class="table-responsive">
+                <table id="applications-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Job Role</th>
+                            <th>Package</th>
+                            <th>Applied Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applications-tbody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Loading applications...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; Campus Placement Management System - Phase 3 REST APIs</p>
+            <p>&copy; Campus Placement Management System - Phase 5 Student Module</p>
         </div>
     </footer>
 
-    <script src="js/app.js"></script>
+    <script src="js/student.js"></script>
 </body>
 </html>

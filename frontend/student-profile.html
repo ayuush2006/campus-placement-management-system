@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Campus Placement</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">Manage Student Profile</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html">🏠 Home</a>
+            <a href="student-dashboard.html">📊 Dashboard</a>
+            <a href="student-profile.html" class="active">👤 My Profile</a>
+            <a href="jobs.html">💼 Available Jobs</a>
+            <a href="applications.html">📝 My Applications</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Current Profile Display Card -->
+        <section class="card">
+            <h2>👤 Current Academic Profile</h2>
+            <p>Your academic profile is used by the system to automatically check eligibility for company placement drives.</p>
+
+            <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 1.25rem; margin: 1rem 0;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                    <div><strong>Full Name:</strong> <span id="prof-name">-</span></div>
+                    <div><strong>Roll Number:</strong> <span id="prof-roll">-</span></div>
+                    <div><strong>Registered Email:</strong> <span id="prof-email">-</span></div>
+                    <div><strong>Branch:</strong> <span id="prof-branch" class="badge info">-</span></div>
+                    <div><strong>CGPA:</strong> <span id="prof-cgpa" style="font-weight:bold; color:#1e3c72;">-</span></div>
+                    <div><strong>Current Backlogs:</strong> <span id="prof-backlogs">-</span></div>
+                    <div><strong>Contact Phone:</strong> <span id="prof-phone">-</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Edit Profile Form -->
+        <section class="card">
+            <h2>✏️ Update Profile Information</h2>
+            <p>Update your academic scores and contact details below:</p>
+
+            <form id="edit-profile-form">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <div class="form-group">
+                        <label for="input-name">Full Name:</label>
+                        <input type="text" id="input-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-branch">Branch:</label>
+                        <select id="input-branch" class="form-control" required>
+                            <option value="CSE">CSE - Computer Science & Engineering</option>
+                            <option value="IT">IT - Information Technology</option>
+                            <option value="ECE">ECE - Electronics & Communication</option>
+                            <option value="MECH">MECH - Mechanical Engineering</option>
+                            <option value="CIVIL">CIVIL - Civil Engineering</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-cgpa">CGPA (0.00 to 10.00):</label>
+                        <input type="number" step="0.01" min="0" max="10" id="input-cgpa" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-backlogs">Active Backlogs:</label>
+                        <input type="number" min="0" max="10" id="input-backlogs" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-phone">Phone Number:</label>
+                        <input type="tel" id="input-phone" class="form-control" placeholder="10-digit mobile number">
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.25rem;">
+                    <button type="submit" class="btn success">💾 Save Changes</button>
+                </div>
+                <div id="edit-profile-msg" style="margin-top: 0.75rem;"></div>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Student Profile</p>
+        </div>
+    </footer>
+
+    <script src="js/student.js"></script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Details - Campus Placement</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">Detailed Job Information & Eligibility Breakdown</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html">🏠 Home</a>
+            <a href="student-dashboard.html">📊 Dashboard</a>
+            <a href="student-profile.html">👤 My Profile</a>
+            <a href="jobs.html" class="active">💼 Available Jobs</a>
+            <a href="applications.html">📝 My Applications</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div style="margin-bottom: 1rem;">
+            <a href="jobs.html" class="btn secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                ← Back to All Jobs
+            </a>
+        </div>
+
+        <section class="card" id="job-detail-content">
+            <div id="job-detail-loading">
+                <p>Loading job details...</p>
+            </div>
+
+            <div id="job-detail-card" style="display: none;">
+                <!-- Header -->
+                <div class="job-header" style="border-bottom: 1px solid #e1e4e8; padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <h2 id="detail-job-title" style="margin-bottom: 0.25rem;">Software Development Engineer</h2>
+                        <div style="font-size: 1.1rem; color: #495057;">
+                            🏢 <span id="detail-company-name">Company</span>
+                            <span id="detail-company-website" style="font-size: 0.88rem; margin-left: 0.5rem;"></span>
+                        </div>
+                        <div style="color: #666; font-size: 0.9rem; margin-top: 0.25rem;">
+                            📍 <span id="detail-job-location">Location</span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 1.6rem; font-weight: 700; color: #198754;" id="detail-package">
+                            ₹0.00 LPA
+                        </div>
+                        <div style="font-size: 0.82rem; color: #777;" id="detail-deadline">
+                            Deadline: Open
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Description -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.1rem; color: #1e3c72; margin-bottom: 0.5rem;">Job Description</h3>
+                    <p id="detail-description" style="color: #444; line-height: 1.6; white-space: pre-wrap;">
+                        Description...
+                    </p>
+                </div>
+
+                <!-- Eligibility Criteria Comparison Table -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.1rem; color: #1e3c72; margin-bottom: 0.5rem;">Eligibility Verification Breakdown</h3>
+                    <p style="font-size: 0.9rem; color: #666;">
+                        Our system compares your academic profile in real-time with the company's placement requirements:
+                    </p>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Criteria</th>
+                                    <th>Company Requirement</th>
+                                    <th>Your Profile</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="criteria-comparison-tbody">
+                                <tr>
+                                    <td><strong>Minimum CGPA</strong></td>
+                                    <td id="comp-min-cgpa">-</td>
+                                    <td id="comp-student-cgpa">-</td>
+                                    <td id="comp-status-cgpa">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Allowed Branch</strong></td>
+                                    <td id="comp-allowed-branch">-</td>
+                                    <td id="comp-student-branch">-</td>
+                                    <td id="comp-status-branch">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Maximum Backlogs</strong></td>
+                                    <td id="comp-max-backlogs">-</td>
+                                    <td id="comp-student-backlogs">-</td>
+                                    <td id="comp-status-backlogs">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Eligibility Banner -->
+                <div id="detail-eligibility-box" class="eligibility-banner" style="margin-bottom: 1.5rem;">
+                    Checking eligibility...
+                </div>
+
+                <!-- Action Button Area -->
+                <div id="detail-action-area" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                    <button id="btn-detail-apply" class="btn success" style="font-size: 1rem; padding: 0.65rem 1.5rem;">
+                        🚀 Apply for this Position
+                    </button>
+                    <a href="jobs.html" class="btn secondary">Back to Openings</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Job Details</p>
+        </div>
+    </footer>
+
+    <script src="js/student.js"></script>
+</body>
+</html>

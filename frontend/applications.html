@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications - Campus Placement</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">Track Your Job Application History & Status</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html">🏠 Home</a>
+            <a href="student-dashboard.html">📊 Dashboard</a>
+            <a href="student-profile.html">👤 My Profile</a>
+            <a href="jobs.html">💼 Available Jobs</a>
+            <a href="applications.html" class="active">📝 My Applications</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Status Summary Stats -->
+        <section class="card">
+            <h2>📊 Application Status Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div id="stat-total-apps" class="number">0</div>
+                    <div class="label">Total Applied</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-shortlisted" class="number" style="color: #198754;">0</div>
+                    <div class="label">Shortlisted</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-pending" class="number" style="color: #ffc107;">0</div>
+                    <div class="label">Under Review</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-rejected" class="number" style="color: #dc3545;">0</div>
+                    <div class="label">Rejected</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Applications History List -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+                <h2>📝 Application Records</h2>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn" id="filter-app-all" onclick="filterApplications('ALL')" style="font-size: 0.82rem; padding: 0.35rem 0.75rem;">All</button>
+                    <button class="btn secondary" id="filter-app-applied" onclick="filterApplications('Applied')" style="font-size: 0.82rem; padding: 0.35rem 0.75rem;">Applied</button>
+                    <button class="btn secondary" id="filter-app-shortlisted" onclick="filterApplications('Shortlisted')" style="font-size: 0.82rem; padding: 0.35rem 0.75rem;">Shortlisted</button>
+                    <button class="btn secondary" id="filter-app-rejected" onclick="filterApplications('Rejected')" style="font-size: 0.82rem; padding: 0.35rem 0.75rem;">Rejected</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Company</th>
+                            <th>Job Role</th>
+                            <th>Package</th>
+                            <th>Applied Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="apps-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading applications...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 1.5rem; text-align: right;">
+                <a href="jobs.html" class="btn success">💼 Browse More Jobs</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Student Applications</p>
+        </div>
+    </footer>
+
+    <script src="js/student.js"></script>
+</body>
+</html>

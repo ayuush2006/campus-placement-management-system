@@ -8,6 +8,7 @@
     "init-db": "node config/initDb.js",
     "test:api": "node test/test-apis.js",
     "test:auth": "node test/test-auth.js",
+    "test:student": "node test/test-student.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
