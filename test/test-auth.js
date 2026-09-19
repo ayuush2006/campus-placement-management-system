@@ -113,9 +113,22 @@ async function runAuthTests() {
         });
 
         if (regRes.status === 201 && regRes.body.token) {
-            assert(regRes.status === 201, 'POST /api/auth/register returns 201 Created');
+            assert(regRes.status === 201, 'POST /api/auth/register returns 201 Created (Successful student registration)');
             assert(regRes.body.token !== undefined, 'Registration issues a valid JWT token immediately');
             const studentToken = regRes.body.token;
+
+            // Test A2: Duplicate Registration Check
+            console.log('\n[Test A2] Duplicate Registration:');
+            const dupRes = await makeRequest('POST', '/api/auth/register', {
+                name: 'Duplicate Student',
+                email: testStudentEmail, // Same email
+                password: 'Password@123',
+                roll_number: `DUP_${timestamp.toString().slice(-6)}`,
+                branch: 'CSE',
+                cgpa: 8.00,
+                backlogs: 0
+            });
+            assert(dupRes.status === 400 && dupRes.body.success === false, 'POST /api/auth/register rejects duplicate registration with status 400');
 
             // Test B: Student Login (Success)
             console.log('\n[Test B] Student Login (Success):');
@@ -123,7 +136,7 @@ async function runAuthTests() {
                 email: testStudentEmail,
                 password: testStudentPassword
             });
-            assert(loginRes.status === 200 && loginRes.body.token !== undefined, 'POST /api/auth/student/login succeeds with status 200');
+            assert(loginRes.status === 200 && loginRes.body.token !== undefined, 'POST /api/auth/student/login succeeds with status 200 (Valid credentials)');
 
             // Test C: Wrong Password
             console.log('\n[Test C] Login with Wrong Password:');
@@ -131,7 +144,7 @@ async function runAuthTests() {
                 email: testStudentEmail,
                 password: 'IncorrectPassword'
             });
-            assert(wrongPassRes.status === 401 && wrongPassRes.body.success === false, 'Wrong password returns 401 Unauthorized');
+            assert(wrongPassRes.status === 401 && wrongPassRes.body.success === false, 'POST /api/auth/student/login rejects wrong password with status 401 Unauthorized');
 
             // Test D: Invalid Token
             console.log('\n[Test D] Access with Invalid Token:');
