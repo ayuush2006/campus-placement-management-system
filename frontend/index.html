@@ -10,7 +10,7 @@
     <header class="header">
         <div class="container">
             <h1>Campus Placement Management System</h1>
-            <p class="subtitle">A beginner-friendly placement tracking portal</p>
+            <p class="subtitle">Phase 3: Backend REST APIs & MySQL Integration</p>
         </div>
     </header>
 
@@ -51,23 +51,50 @@
             <button id="db-refresh-btn" class="btn">Test DB Connection Again</button>
         </section>
 
-        <!-- 3. Database Schema Card -->
+        <!-- 3. Phase 3 REST API Quick Explorer Card -->
         <section class="card">
-            <h2>Phase 2 Relational Database Schema</h2>
-            <p>The system uses <strong>MySQL</strong> with 5 relational tables:</p>
+            <h2>3. Phase 3 REST API Interactive Explorer</h2>
+            <p>Click any button below to test live REST API communication with MySQL:</p>
+            
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <button id="btn-get-companies" class="btn">GET /api/companies</button>
+                <button id="btn-get-jobs" class="btn">GET /api/jobs</button>
+                <button id="btn-get-student" class="btn">GET /api/students/2</button>
+                <button id="btn-get-apps" class="btn">GET /api/applications/student/2</button>
+            </div>
+
+            <div class="response-box">
+                <label for="api-explorer-response">REST API Output (<span id="api-endpoint-label">None selected</span>):</label>
+                <pre id="api-explorer-response">Click one of the buttons above to query the REST API.</pre>
+            </div>
+        </section>
+
+        <!-- 4. REST APIs List Card -->
+        <section class="card">
+            <h2>Phase 3 Implemented REST APIs</h2>
             <ul class="feature-list">
-                <li><span class="badge success">Table</span> <strong>users</strong> - Stores student and admin credentials & roles</li>
-                <li><span class="badge success">Table</span> <strong>student_profiles</strong> - Academic data (CGPA, Branch, Backlogs) [FK: user_id]</li>
-                <li><span class="badge success">Table</span> <strong>companies</strong> - Company profiles and recruiting contacts</li>
-                <li><span class="badge success">Table</span> <strong>jobs</strong> - Job openings with eligibility criteria [FK: company_id]</li>
-                <li><span class="badge success">Table</span> <strong>applications</strong> - Student applications & statuses [FKs: student_id, job_id]</li>
+                <li><span class="badge info">POST</span> <code>/api/students</code> - Register student with profile</li>
+                <li><span class="badge success">GET</span> <code>/api/students/:id</code> - Get student details by ID</li>
+                <li><span class="badge success">PUT</span> <code>/api/students/:id</code> - Update student profile details</li>
+                <li><span class="badge success">GET</span> <code>/api/companies</code> - Get all participating companies</li>
+                <li><span class="badge info">POST</span> <code>/api/companies</code> - Create a new company record</li>
+                <li><span class="badge success">PUT</span> <code>/api/companies/:id</code> - Update company details</li>
+                <li><span class="badge danger" style="background:#fce8e6; color:#c5221f;">DELETE</span> <code>/api/companies/:id</code> - Delete company safely</li>
+                <li><span class="badge success">GET</span> <code>/api/jobs</code> - Get all job openings with company joins</li>
+                <li><span class="badge success">GET</span> <code>/api/jobs/:id</code> - Get single job details by ID</li>
+                <li><span class="badge info">POST</span> <code>/api/jobs</code> - Post new job with eligibility criteria</li>
+                <li><span class="badge success">PUT</span> <code>/api/jobs/:id</code> - Update job opening details</li>
+                <li><span class="badge danger" style="background:#fce8e6; color:#c5221f;">DELETE</span> <code>/api/jobs/:id</code> - Delete job opening</li>
+                <li><span class="badge info">POST</span> <code>/api/applications</code> - Submit job application</li>
+                <li><span class="badge success">GET</span> <code>/api/applications/student/:studentId</code> - Student application status</li>
+                <li><span class="badge success">GET</span> <code>/api/applications/job/:jobId</code> - Job applicant listings</li>
             </ul>
         </section>
     </main>
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; Campus Placement Management System - Phase 2</p>
+            <p>&copy; Campus Placement Management System - Phase 3 REST APIs</p>
         </div>
     </footer>
 

@@ -74,6 +74,14 @@ app.get('/api/db-test', async (req, res) => {
     }
 });
 
+// ==============================================================================
+// Phase 3: REST API Routes
+// ==============================================================================
+app.use('/api/students', require('./routes/studentRoutes'));
+app.use('/api/companies', require('./routes/companyRoutes'));
+app.use('/api/jobs', require('./routes/jobRoutes'));
+app.use('/api/applications', require('./routes/applicationRoutes'));
+
 // Fallback Route for Undefined API Endpoints
 app.use('/api', (req, res) => {
     res.status(404).json({
