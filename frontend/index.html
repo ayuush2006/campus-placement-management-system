@@ -15,10 +15,10 @@
     </header>
 
     <main class="container">
-        <!-- Backend API Health Status Card -->
+        <!-- 1. Backend Server Status Card -->
         <section class="card">
-            <h2>Backend Server Status</h2>
-            <p>This checks the connection to the Express.js backend health-check route: <code>GET /api/health</code></p>
+            <h2>1. Backend Server Status</h2>
+            <p>Checks the connection to the Express.js backend: <code>GET /api/health</code></p>
             
             <div id="status-container" class="status-box pending">
                 <span class="status-dot"></span>
@@ -26,29 +26,48 @@
             </div>
 
             <div class="response-box">
-                <label for="raw-response">API Response:</label>
+                <label for="raw-response">Server Response:</label>
                 <pre id="raw-response">Waiting for server response...</pre>
             </div>
 
-            <button id="refresh-btn" class="btn">Check Status Again</button>
+            <button id="refresh-btn" class="btn">Check Server Again</button>
         </section>
 
-        <!-- Project Overview Card -->
+        <!-- 2. MySQL Database Status Card -->
         <section class="card">
-            <h2>Phase 1 Setup Overview</h2>
+            <h2>2. MySQL Database Connection Status</h2>
+            <p>Checks the MySQL connection pool and fetches tables: <code>GET /api/db-test</code></p>
+            
+            <div id="db-status-container" class="status-box pending">
+                <span class="status-dot"></span>
+                <span id="db-status-text">Checking database connection...</span>
+            </div>
+
+            <div class="response-box">
+                <label for="db-raw-response">Database Response & Detected Tables:</label>
+                <pre id="db-raw-response">Waiting for database response...</pre>
+            </div>
+
+            <button id="db-refresh-btn" class="btn">Test DB Connection Again</button>
+        </section>
+
+        <!-- 3. Database Schema Card -->
+        <section class="card">
+            <h2>Phase 2 Relational Database Schema</h2>
+            <p>The system uses <strong>MySQL</strong> with 5 relational tables:</p>
             <ul class="feature-list">
-                <li><span class="badge success">Ready</span> <strong>Frontend:</strong> Pure HTML, CSS, and Vanilla JavaScript</li>
-                <li><span class="badge success">Ready</span> <strong>Backend:</strong> Node.js & Express.js REST API</li>
-                <li><span class="badge success">Ready</span> <strong>Health Check Route:</strong> <code>GET /api/health</code></li>
-                <li><span class="badge info">Phase 2</span> <strong>Database:</strong> MySQL connection & schema setup</li>
-                <li><span class="badge info">Phase 2</span> <strong>Authentication:</strong> Student & Admin Login / Registration</li>
+                <li><span class="badge success">Table</span> <strong>users</strong> - Stores student and admin credentials & roles</li>
+                <li><span class="badge success">Table</span> <strong>student_profiles</strong> - Academic data (CGPA, Branch, Backlogs) [FK: user_id]</li>
+                <li><span class="badge success">Table</span> <strong>companies</strong> - Company profiles and recruiting contacts</li>
+                <li><span class="badge success">Table</span> <strong>jobs</strong> - Job openings with eligibility criteria [FK: company_id]</li>
+                <li><span class="badge success">Table</span> <strong>applications</strong> - Student applications & statuses [FKs: student_id, job_id]</li>
             </ul>
         </section>
     </main>
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; Campus Placement Management System - Phase 1</p>
+            <p>&copy; Campus Placement Management System - Phase 2</p>
         </div>
     </footer>
 
