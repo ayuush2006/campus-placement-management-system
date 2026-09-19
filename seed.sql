@@ -6,12 +6,12 @@
 USE campus_placement_db;
 
 -- 1. Insert Sample Users (1 Admin, 3 Students)
--- Passwords will be plain/placeholder for now; in upcoming phases bcrypt hashing will be used
+-- Passwords are hashed with bcrypt (admin123 for admin, student123 for students)
 INSERT INTO users (user_id, name, email, password, role) VALUES
-(1, 'Placement Officer', 'admin@placement.edu', 'admin123', 'admin'),
-(2, 'Rahul Sharma', 'rahul@student.edu', 'student123', 'student'),
-(3, 'Priya Patel', 'priya@student.edu', 'student123', 'student'),
-(4, 'Amit Verma', 'amit@student.edu', 'student123', 'student');
+(1, 'Placement Officer', 'admin@placement.edu', '$2b$10$0a22TRbSzDHZzX8iYzFC5OHhfIVBvGl5Utpk8pSQa4knERzE5YS.C', 'admin'),
+(2, 'Rahul Sharma', 'rahul@student.edu', '$2b$10$r1Cr31B9UFLrLSbHTRH/Mepr/Efqc.9zNiXyM2EZydvhQYz7LRXL2', 'student'),
+(3, 'Priya Patel', 'priya@student.edu', '$2b$10$r1Cr31B9UFLrLSbHTRH/Mepr/Efqc.9zNiXyM2EZydvhQYz7LRXL2', 'student'),
+(4, 'Amit Verma', 'amit@student.edu', '$2b$10$r1Cr31B9UFLrLSbHTRH/Mepr/Efqc.9zNiXyM2EZydvhQYz7LRXL2', 'student');
 
 -- 2. Insert Student Profiles (for student user_ids 2, 3, 4)
 INSERT INTO student_profiles (profile_id, user_id, roll_number, branch, cgpa, backlogs, phone, resume_url) VALUES

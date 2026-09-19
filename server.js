@@ -75,8 +75,12 @@ app.get('/api/db-test', async (req, res) => {
 });
 
 // ==============================================================================
-// Phase 3: REST API Routes
+// REST API Routes
 // ==============================================================================
+// Authentication routes (Student/Admin login & registration)
+app.use('/api/auth', require('./routes/authRoutes'));
+
+// Business entity routes
 app.use('/api/students', require('./routes/studentRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));

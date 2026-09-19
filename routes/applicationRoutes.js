@@ -12,13 +12,15 @@ const {
     getApplicationsByJob
 } = require('../controllers/applicationController');
 
-// POST /api/applications - Submit an application for a job
-router.post('/', createApplication);
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 
-// GET /api/applications/student/:studentId - Get all applications submitted by a student
-router.get('/student/:studentId', getApplicationsByStudent);
+// POST /api/applications - Submit an application for a job (Authenticated Student)
+router.post('/', authenticateToken, createApplication);
 
-// GET /api/applications/job/:jobId - Get all applications submitted for a job
-router.get('/job/:jobId', getApplicationsByJob);
+// GET /api/applications/student/:studentId - Get all applications submitted by a student (Authenticated)
+router.get('/student/:studentId', authenticateToken, getApplicationsByStudent);
+
+// GET /api/applications/job/:jobId - Get all applications submitted for a job (Admin Only)
+router.get('/job/:jobId', authenticateToken, requireAdmin, getApplicationsByJob);
 
 module.exports = router;

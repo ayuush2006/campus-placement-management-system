@@ -3,6 +3,7 @@
 // Handles registration, retrieval, and updating of student data
 // ==============================================================================
 
+const bcrypt = require('bcryptjs');
 const { pool } = require('../config/db');
 
 // @desc    Register a new student and create profile
@@ -38,10 +39,13 @@ const createStudent = async (req, res) => {
             });
         }
 
-        // 4. Insert user record into `users` table
+        // 4. Hash the password with bcryptjs before saving
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 5. Insert user record into `users` table
         const [userResult] = await pool.query(
             'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-            [name.trim(), email.trim().toLowerCase(), password, 'student']
+            [name.trim(), email.trim().toLowerCase(), hashedPassword, 'student']
         );
         const userId = userResult.insertId;
 

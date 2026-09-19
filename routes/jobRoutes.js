@@ -14,19 +14,21 @@ const {
     deleteJob
 } = require('../controllers/jobController');
 
-// GET /api/jobs - Get all available jobs
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
+
+// GET /api/jobs - Get all available jobs (Public)
 router.get('/', getAllJobs);
 
-// GET /api/jobs/:id - Get a specific job by ID
+// GET /api/jobs/:id - Get a specific job by ID (Public)
 router.get('/:id', getJobById);
 
-// POST /api/jobs - Create a new job opening
-router.post('/', createJob);
+// POST /api/jobs - Create a new job opening (Admin Only)
+router.post('/', authenticateToken, requireAdmin, createJob);
 
-// PUT /api/jobs/:id - Update a job opening
-router.put('/:id', updateJob);
+// PUT /api/jobs/:id - Update a job opening (Admin Only)
+router.put('/:id', authenticateToken, requireAdmin, updateJob);
 
-// DELETE /api/jobs/:id - Delete a job opening
-router.delete('/:id', deleteJob);
+// DELETE /api/jobs/:id - Delete a job opening (Admin Only)
+router.delete('/:id', authenticateToken, requireAdmin, deleteJob);
 
 module.exports = router;

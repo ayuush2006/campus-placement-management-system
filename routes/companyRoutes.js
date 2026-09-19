@@ -14,19 +14,21 @@ const {
     deleteCompany
 } = require('../controllers/companyController');
 
-// GET /api/companies - Get all companies
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
+
+// GET /api/companies - Get all companies (Public)
 router.get('/', getAllCompanies);
 
-// GET /api/companies/:id - Get single company by ID
+// GET /api/companies/:id - Get single company by ID (Public)
 router.get('/:id', getCompanyById);
 
-// POST /api/companies - Create a new company
-router.post('/', createCompany);
+// POST /api/companies - Create a new company (Admin Only)
+router.post('/', authenticateToken, requireAdmin, createCompany);
 
-// PUT /api/companies/:id - Update company by ID
-router.put('/:id', updateCompany);
+// PUT /api/companies/:id - Update company by ID (Admin Only)
+router.put('/:id', authenticateToken, requireAdmin, updateCompany);
 
-// DELETE /api/companies/:id - Delete company by ID
-router.delete('/:id', deleteCompany);
+// DELETE /api/companies/:id - Delete company by ID (Admin Only)
+router.delete('/:id', authenticateToken, requireAdmin, deleteCompany);
 
 module.exports = router;

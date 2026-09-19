@@ -12,13 +12,15 @@ const {
     updateStudent
 } = require('../controllers/studentController');
 
-// POST /api/students - Register a new student
+const { authenticateToken } = require('../middleware/authMiddleware');
+
+// POST /api/students - Register a new student (Public)
 router.post('/', createStudent);
 
-// GET /api/students/:id - Get student details by ID
-router.get('/:id', getStudentById);
+// GET /api/students/:id - Get student details by ID (Authenticated)
+router.get('/:id', authenticateToken, getStudentById);
 
-// PUT /api/students/:id - Update student details by ID
-router.put('/:id', updateStudent);
+// PUT /api/students/:id - Update student details by ID (Authenticated)
+router.put('/:id', authenticateToken, updateStudent);
 
 module.exports = router;
