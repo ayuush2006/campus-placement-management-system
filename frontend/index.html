@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Placement Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">A beginner-friendly placement tracking portal</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Backend API Health Status Card -->
+        <section class="card">
+            <h2>Backend Server Status</h2>
+            <p>This checks the connection to the Express.js backend health-check route: <code>GET /api/health</code></p>
+            
+            <div id="status-container" class="status-box pending">
+                <span class="status-dot"></span>
+                <span id="status-text">Checking server status...</span>
+            </div>
+
+            <div class="response-box">
+                <label for="raw-response">API Response:</label>
+                <pre id="raw-response">Waiting for server response...</pre>
+            </div>
+
+            <button id="refresh-btn" class="btn">Check Status Again</button>
+        </section>
+
+        <!-- Project Overview Card -->
+        <section class="card">
+            <h2>Phase 1 Setup Overview</h2>
+            <ul class="feature-list">
+                <li><span class="badge success">Ready</span> <strong>Frontend:</strong> Pure HTML, CSS, and Vanilla JavaScript</li>
+                <li><span class="badge success">Ready</span> <strong>Backend:</strong> Node.js & Express.js REST API</li>
+                <li><span class="badge success">Ready</span> <strong>Health Check Route:</strong> <code>GET /api/health</code></li>
+                <li><span class="badge info">Phase 2</span> <strong>Database:</strong> MySQL connection & schema setup</li>
+                <li><span class="badge info">Phase 2</span> <strong>Authentication:</strong> Student & Admin Login / Registration</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Phase 1</p>
+        </div>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
