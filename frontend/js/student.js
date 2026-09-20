@@ -306,8 +306,12 @@ async function applyForJob(jobId) {
         alert('🎉 Application submitted successfully! Status: Applied (Under Review)');
         loadDashboard(); // Refresh counts and status across dashboard
     } else {
-        if (res.data.reasons && res.data.reasons.length > 0) {
-            alert(`❌ Application Rejected:\n\n` + res.data.reasons.join('\n'));
+        if (res.status === 409 || res.data.alreadyApplied) {
+            alert('ℹ️ You have already applied for this job opening.');
+        } else if (res.status === 401) {
+            alert('🔒 Please log in as a student to apply for this job.');
+        } else if (res.data.reasons && res.data.reasons.length > 0) {
+            alert(`❌ Not Eligible:\n\n` + res.data.reasons.join('\n'));
         } else {
             alert(`⚠️ Notice: ${res.data.message || 'Submission failed'}`);
         }
@@ -561,6 +565,183 @@ async function loadJobDetailsPage() {
 }
 
 // ------------------------------------------------------------------------------
+// 14. Load Placement Readiness Score (Rule-Based — Not AI)
+// ------------------------------------------------------------------------------
+// This function fetches the readiness score from the backend.
+// The score is calculated using a simple deterministic formula — NOT machine learning.
+// Formula: CGPA(30) + Backlogs(20) + Phone(10) + Resume(20) + Applied(10) + Shortlisted(10) = 100
+async function loadReadinessScore() {
+    const container = document.getElementById('readiness-container');
+    if (!container) return;
+
+    const res = await apiCall('/api/students/readiness-score');
+    if (!res.ok || !res.data.success) {
+        container.innerHTML = `<p style="color: #dc3545;">Could not load readiness score: ${res.data.message || 'Please log in.'}</p>`;
+        return;
+    }
+
+    const d = res.data;
+    const score = d.score;
+    const maxScore = d.maxScore;
+    const percent = Math.round((score / maxScore) * 100);
+    const color = d.gradeColor || '#0d6efd';
+
+    // Render score bar + breakdown table
+    const breakdownRows = Object.entries(d.breakdown).map(([key, item]) => {
+        const tickOrCross = item.points > 0 ? '✅' : '❌';
+        const barWidth = Math.round((item.points / item.maxPoints) * 100);
+        return `
+            <tr>
+                <td style="font-weight: 600; text-transform: capitalize; white-space: nowrap;">${key}</td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <strong style="color:${item.points === item.maxPoints ? '#198754' : '#dc3545'}">
+                        ${item.points}/${item.maxPoints}
+                    </strong>
+                </td>
+                <td style="min-width: 100px;">
+                    <div style="background:#e9ecef; border-radius:4px; height:8px; overflow:hidden;">
+                        <div style="background:${item.points > 0 ? '#198754' : '#dc3545'}; width:${barWidth}%; height:100%; border-radius:4px; transition: width 0.6s;"></div>
+                    </div>
+                </td>
+                <td>${tickOrCross}</td>
+                <td style="font-size: 0.85rem; color: #555;">${item.message}</td>
+            </tr>
+        `;
+    }).join('');
+
+    const tipsHtml = d.tips && d.tips.length > 0
+        ? `<div style="margin-top: 1rem; padding: 0.75rem; background:#f8f9fa; border-radius:6px; border-left:3px solid #0d6efd;">
+               <strong>💡 Tips to improve your score:</strong>
+               <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem;">
+                   ${d.tips.map(tip => `<li style="font-size:0.9rem; margin-bottom:0.25rem;">${tip}</li>`).join('')}
+               </ul>
+           </div>`
+        : '';
+
+    container.innerHTML = `
+        <!-- Score Circle + Grade -->
+        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <div style="text-align: center; min-width: 100px;">
+                <div style="font-size: 2.5rem; font-weight: bold; color: ${color};">${score}</div>
+                <div style="font-size: 0.85rem; color: #555;">/ ${maxScore}</div>
+            </div>
+            <div style="flex: 1;">
+                <!-- Progress bar showing total score -->
+                <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.35rem;">
+                    <span style="font-size:1rem; font-weight:bold; color:${color};">${d.grade}</span>
+                </div>
+                <div style="background: #e9ecef; border-radius: 8px; height: 16px; overflow: hidden;">
+                    <div style="background: ${color}; width: ${percent}%; height: 100%; border-radius: 8px; transition: width 0.8s; display: flex; align-items: center; justify-content: center;">
+                        <span style="color:white; font-size:0.7rem; font-weight:bold;">${percent}%</span>
+                    </div>
+                </div>
+                <small style="color: #888;">Rule-based formula: CGPA(30) + Backlogs(20) + Resume(20) + Phone(10) + Applied(10) + Shortlisted(10)</small>
+            </div>
+        </div>
+
+        <!-- Score Breakdown Table -->
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Criterion</th>
+                        <th>Score</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>${breakdownRows}</tbody>
+            </table>
+        </div>
+
+        ${tipsHtml}
+    `;
+}
+
+// ------------------------------------------------------------------------------
+// 15. Load Recommended Jobs (Rule-Based Match Score — Not AI / Not ML)
+// ------------------------------------------------------------------------------
+// This function shows jobs sorted by match %.
+// Match % = Branch(40%) + CGPA(35%) + Backlogs(25%)
+// This is NOT an AI recommendation — it is a transparent weighted formula.
+async function loadRecommendedJobs() {
+    const container = document.getElementById('recommended-container');
+    if (!container) return;
+
+    const res = await apiCall('/api/students/recommended-jobs');
+    if (!res.ok || !res.data.success) {
+        container.innerHTML = `<p style="color: #dc3545;">Could not load recommendations: ${res.data.message || 'Please log in.'}</p>`;
+        return;
+    }
+
+    const { jobs } = res.data;
+
+    if (!jobs || jobs.length === 0) {
+        container.innerHTML = '<p style="color: #666; font-style: italic;">No jobs available yet. Check back later.</p>';
+        return;
+    }
+
+    // Show top 5 recommended jobs
+    const topJobs = jobs.slice(0, 5);
+
+    container.innerHTML = topJobs.map(job => {
+        const matchPercent = job.matchPercent;
+        let matchColor = '#dc3545';
+        if (matchPercent >= 80) matchColor = '#198754';
+        else if (matchPercent >= 50) matchColor = '#ffc107';
+
+        const eligBadge = job.isEligible
+            ? '<span class="badge" style="background:#d1e7dd; color:#0f5132; margin-left:0.4rem; font-size:0.75rem;">✅ Eligible</span>'
+            : '<span class="badge" style="background:#f8d7da; color:#842029; margin-left:0.4rem; font-size:0.75rem;">❌ Not Eligible</span>';
+
+        const appliedBadge = job.hasApplied
+            ? '<span class="badge applied" style="margin-left:0.4rem; font-size:0.75rem;">Applied</span>'
+            : '';
+
+        const applyBtn = job.hasApplied
+            ? `<button class="btn" disabled style="background:#ced4da; color:#6c757d; cursor:not-allowed; font-size:0.82rem; padding:0.35rem 0.75rem;">✅ Applied</button>`
+            : job.isEligible
+                ? `<button class="btn success" onclick="applyForJob(${job.job_id})" style="font-size:0.82rem; padding:0.35rem 0.75rem;">🚀 Apply Now</button>`
+                : `<button class="btn secondary" onclick="alert('Not eligible:\\n' + ${JSON.stringify(job.eligibilityReasons)}.join('\\n'))" style="font-size:0.82rem; padding:0.35rem 0.75rem;">❌ Not Eligible</button>`;
+
+        return `
+            <div style="border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <!-- Match % Circle -->
+                <div style="text-align: center; min-width: 70px;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: ${matchColor};">${matchPercent}%</div>
+                    <div style="font-size: 0.7rem; color: #888;">match</div>
+                    <div style="font-size: 0.7rem; color: ${matchColor}; font-weight: 600;">${job.matchLabel}</div>
+                </div>
+
+                <!-- Job Info -->
+                <div style="flex: 1; min-width: 200px;">
+                    <div style="font-weight: bold; font-size: 1rem;">${job.title} ${eligBadge} ${appliedBadge}</div>
+                    <div style="color: #555; font-size: 0.88rem;">🏢 ${job.company_name} &nbsp;|&nbsp; 💰 ₹${parseFloat(job.package_lpa).toFixed(2)} LPA &nbsp;|&nbsp; 📍 ${job.location || 'Pan India'}</div>
+                    <div style="font-size: 0.8rem; color: #777; margin-top: 0.25rem;">
+                        Branch score: ${job.branchScore}% &nbsp;|&nbsp; CGPA score: ${job.cgpaMatchScore}% &nbsp;|&nbsp; Backlog score: ${job.backlogMatchScore}%
+                    </div>
+                </div>
+
+                <!-- Action -->
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                    <a href="job-details.html?id=${job.job_id}" class="btn secondary" style="font-size:0.82rem; padding:0.35rem 0.75rem; text-decoration:none;">📄 Details</a>
+                    ${applyBtn}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    if (jobs.length > 5) {
+        container.innerHTML += `
+            <div style="text-align: center; margin-top: 0.5rem;">
+                <a href="jobs.html" class="btn secondary" style="font-size: 0.85rem;">View All ${jobs.length} Jobs →</a>
+            </div>
+        `;
+    }
+}
+
+// ------------------------------------------------------------------------------
 // 13. DOM Ready Initialization
 // ------------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', async () => {
@@ -573,6 +754,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         await loadDashboard();
     }
+
+    // Load Phase 6 features: readiness score + recommended jobs
+    await loadReadinessScore();
+    await loadRecommendedJobs();
 
     // Attach profile form handler
     const profForm = document.getElementById('edit-profile-form');
@@ -615,3 +800,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Job Details Page if on job-details.html
     loadJobDetailsPage();
 });
+

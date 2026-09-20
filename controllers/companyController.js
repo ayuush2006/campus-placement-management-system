@@ -218,12 +218,30 @@ const deleteCompany = async (req, res) => {
             });
         }
 
+        // Check if there are active student applications linked to this company's jobs
+        const [appCountResult] = await pool.query(
+            `SELECT COUNT(a.application_id) AS totalApps
+             FROM applications a
+             JOIN jobs j ON a.job_id = j.job_id
+             WHERE j.company_id = ?`,
+            [companyId]
+        );
+
+        const totalApps = appCountResult[0].totalApps || 0;
+        if (totalApps > 0 && req.query.force !== 'true') {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete company "${existing[0].name}" because there are ${totalApps} existing student application(s) linked to its job openings. Please review or resolve applications first, or provide ?force=true to force delete.`,
+                dependentApplicationsCount: totalApps
+            });
+        }
+
         // Delete company (ON DELETE CASCADE in MySQL handles linked jobs & applications)
         await pool.query('DELETE FROM companies WHERE company_id = ?', [companyId]);
 
         res.status(200).json({
             success: true,
-            message: `Company "${existing[0].name}" and its associated jobs/applications were deleted successfully`
+            message: `Company "${existing[0].name}" was deleted successfully`
         });
     } catch (error) {
         console.error('Error deleting company:', error.message);

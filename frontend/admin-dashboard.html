@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Campus Placement Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header" style="background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">Administrator Control Portal &amp; Recruitment Analytics</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html">🏠 Home</a>
+            <a href="admin-dashboard.html" class="active">📊 Admin Dashboard</a>
+            <a href="admin-companies.html">🏢 Companies</a>
+            <a href="admin-jobs.html">💼 Job Drives</a>
+            <a href="admin-applications.html">👥 Applications</a>
+            <a href="student-dashboard.html" style="color: #0d6efd;">🎓 Student Portal</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Unauthorized / Student Guard Alert (Shown if not admin) -->
+        <div id="admin-access-guard" style="display: none;"></div>
+
+        <!-- Hidden anchor for JS DOMContentLoaded trigger -->
+        <div id="admin-dashboard-view"></div>
+
+        <!-- Admin Overview & Session Card -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                <div>
+                    <h2>Welcome, Administrator: <span id="admin-display-name">Admin</span> 🛡️</h2>
+                    <p style="margin: 0; color: #666;">Here is your live campus recruitment analytics overview from MySQL.</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn secondary" onclick="demoAdminLogin('admin@placement.edu', 'admin123')" style="font-size: 0.82rem;">
+                        🔑 Admin Demo Session
+                    </button>
+                    <a href="admin-companies.html" class="btn secondary" style="font-size: 0.82rem;">+ Add Company</a>
+                    <a href="admin-jobs.html" class="btn success" style="font-size: 0.82rem;">+ Post New Job</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live MySQL Recruitment Statistics Grid -->
+        <section class="card">
+            <h2>📈 Campus Recruitment Statistics (Real-time MySQL)</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div id="stat-total-students" class="number">0</div>
+                    <div class="label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-total-companies" class="number">0</div>
+                    <div class="label">Partner Companies</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-total-jobs" class="number">0</div>
+                    <div class="label">Total Jobs Posted</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-total-applications" class="number">0</div>
+                    <div class="label">Total Applications</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-total-shortlisted" class="number" style="color: #198754;">0</div>
+                    <div class="label">Shortlisted</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-total-rejected" class="number" style="color: #dc3545;">0</div>
+                    <div class="label">Rejected</div>
+                </div>
+                <div class="stat-card">
+                    <div id="stat-total-review" class="number" style="color: #ffc107;">0</div>
+                    <div class="label">Under Review</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             ADMIN ANALYTICS (Phase 6 — New Feature)
+             Real MySQL data: GROUP BY, COUNT, JOIN
+             Applications by Status, Applications by Branch, Company Summary
+        ============================================================ -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>📊 Placement Analytics</h2>
+                <small style="color: #666; font-style: italic;">Real-time MySQL GROUP BY / COUNT aggregation</small>
+            </div>
+
+            <!-- Analytics Row: Status & Branch side by side -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <!-- Applications by Status -->
+                <div>
+                    <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">📋 Applications by Status</h3>
+                    <div id="analytics-by-status">
+                        <p style="color: #666; font-style: italic; font-size: 0.9rem;">Loading...</p>
+                    </div>
+                </div>
+                <!-- Applications by Branch -->
+                <div>
+                    <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">🎓 Applications by Branch</h3>
+                    <div id="analytics-by-branch">
+                        <p style="color: #666; font-style: italic; font-size: 0.9rem;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Jobs by Applicant Count -->
+            <h3 style="margin-bottom: 0.75rem; font-size: 1rem;">🔥 Top Jobs by Applicant Count</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Company</th>
+                            <th>Job Title</th>
+                            <th>Package</th>
+                            <th>Applicants</th>
+                            <th>Shortlisted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analytics-top-jobs">
+                        <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Recent Applications Table -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h2>📝 Recent Student Applications</h2>
+                <a href="admin-applications.html" class="btn secondary" style="font-size: 0.82rem;">View &amp; Manage All Applications →</a>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Company</th>
+                            <th>Job Role</th>
+                            <th>Applied Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-applications-tbody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading recent applications...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Active Placement Drives Table -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h2>💼 Active Campus Placement Drives</h2>
+                <a href="admin-jobs.html" class="btn secondary" style="font-size: 0.82rem;">Manage All Jobs →</a>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Job Title</th>
+                            <th>Package</th>
+                            <th>Applicant Count</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-jobs-tbody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Loading jobs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Phase 6 Admin Module</p>
+        </div>
+    </footer>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -171,21 +171,22 @@ async function runTests() {
         // 5. Application APIs
         console.log('\n--- 5. Application API Tests ---');
         if (studentId && testJobId) {
+            const currentStudentToken = generateToken({ user_id: studentId, email: studentEmail, role: 'student' });
             const createApplication = await makeRequest('POST', '/api/applications', {
                 student_id: studentId,
                 job_id: testJobId
-            }, studentToken);
+            }, currentStudentToken);
             assert(createApplication.status === 201 && createApplication.body.success === true, 'POST /api/applications submits job application (Authenticated)');
 
             // Test duplicate application prevention
             const duplicateApp = await makeRequest('POST', '/api/applications', {
                 student_id: studentId,
                 job_id: testJobId
-            }, studentToken);
-            assert(duplicateApp.status === 400 && duplicateApp.body.success === false, 'POST /api/applications rejects duplicate application (status 400)');
+            }, currentStudentToken);
+            assert((duplicateApp.status === 400 || duplicateApp.status === 409) && duplicateApp.body.success === false, 'POST /api/applications rejects duplicate application (status 400 or 409)');
 
             // Get student applications
-            const studentApps = await makeRequest('GET', `/api/applications/student/${studentId}`, null, studentToken);
+            const studentApps = await makeRequest('GET', `/api/applications/student/${studentId}`, null, currentStudentToken);
             assert(studentApps.status === 200 && studentApps.body.count >= 1, 'GET /api/applications/student/:studentId returns student applications');
 
             // Get job applications (Admin Only)
@@ -196,11 +197,11 @@ async function runTests() {
         // 6. Cleanup & Cascade Delete Test
         console.log('\n--- 6. Deletion & Cleanup Tests ---');
         if (testJobId) {
-            const deleteJob = await makeRequest('DELETE', `/api/jobs/${testJobId}`, null, adminToken);
+            const deleteJob = await makeRequest('DELETE', `/api/jobs/${testJobId}?force=true`, null, adminToken);
             assert(deleteJob.status === 200, 'DELETE /api/jobs/:id deletes job and its applications (Admin Only)');
         }
         if (companyId) {
-            const deleteComp = await makeRequest('DELETE', `/api/companies/${companyId}`, null, adminToken);
+            const deleteComp = await makeRequest('DELETE', `/api/companies/${companyId}?force=true`, null, adminToken);
             assert(deleteComp.status === 200, 'DELETE /api/companies/:id deletes company safely (Admin Only)');
         }
 

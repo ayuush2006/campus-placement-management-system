@@ -8,18 +8,39 @@ const { checkEligibility } = require('../utils/eligibilityHelper');
 
 // @desc    Submit a new job application with eligibility verification
 // @route   POST /api/applications
-// @access  Private (Student) / Public with student_id
+// @access  Private (Student — JWT Required)
+//
+// SECURITY: student_id is extracted ONLY from the verified JWT token (req.user.userId).
+// The request body student_id is intentionally ignored to prevent impersonation.
+// Backend validates eligibility independently — frontend eligibility display cannot be bypassed.
+//
 const createApplication = async (req, res) => {
     try {
-        // Support student_id from either authenticated token (req.user) or request body
-        const student_id = req.user ? req.user.userId : req.body.student_id;
+        // SECURITY: Only accept student identity from verified JWT token, never from request body.
+        // This prevents an attacker from submitting an application as another student.
+        if (!req.user || !req.user.userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required. Please login as a student to apply.'
+            });
+        }
+
+        // Enforce that only students can apply (not admins)
+        if (req.user.role !== 'student') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied: Only students can submit job applications.'
+            });
+        }
+
+        const student_id = req.user.userId;
         const { job_id } = req.body;
 
-        // 1. Validation: student_id and job_id are required
-        if (!student_id || !job_id) {
+        // 1. Validation: job_id is required
+        if (!job_id) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide both student_id and job_id'
+                message: 'Please provide job_id to apply'
             });
         }
 
@@ -29,7 +50,7 @@ const createApplication = async (req, res) => {
         if (isNaN(parsedStudentId) || isNaN(parsedJobId)) {
             return res.status(400).json({
                 success: false,
-                message: 'student_id and job_id must be valid numbers'
+                message: 'job_id must be a valid number'
             });
         }
 
@@ -46,7 +67,7 @@ const createApplication = async (req, res) => {
         if (students.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: `Student not found with ID ${parsedStudentId}`
+                message: `Student account not found`
             });
         }
 
@@ -79,6 +100,7 @@ const createApplication = async (req, res) => {
         const job = jobs[0];
 
         // 4. Duplicate Check: Prevent student from applying twice to the same job
+        // Note: Also enforced at the database level via UNIQUE(student_id, job_id) constraint
         const [existingApp] = await pool.query(
             'SELECT application_id, status, applied_at FROM applications WHERE student_id = ? AND job_id = ?',
             [parsedStudentId, parsedJobId]
@@ -87,13 +109,15 @@ const createApplication = async (req, res) => {
         if (existingApp.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'You have already applied for this job opening',
+                message: 'Already applied for this job.',
                 alreadyApplied: true,
                 application: existingApp[0]
             });
         }
 
-        // 5. Eligibility Check: Evaluate student criteria against job requirements
+        // 5. Backend Eligibility Check: Evaluate student criteria against job requirements
+        // This check runs on the BACKEND regardless of what the frontend showed the student.
+        // A student cannot bypass eligibility by calling the API directly.
         const eligibilityResult = checkEligibility(student, job);
 
         if (!eligibilityResult.eligible) {
@@ -126,6 +150,14 @@ const createApplication = async (req, res) => {
             }
         });
     } catch (error) {
+        // Handle MySQL duplicate entry error (UNIQUE constraint violation at DB level)
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({
+                success: false,
+                message: 'Already applied for this job.',
+                alreadyApplied: true
+            });
+        }
         console.error('Error creating application:', error.message);
         res.status(500).json({
             success: false,
@@ -380,10 +412,148 @@ const getApplicationsByJob = async (req, res) => {
     }
 };
 
+// @desc    Get all applications across all jobs and companies (with optional filters)
+// @route   GET /api/applications
+// @access  Private (Admin Only)
+const getAllApplications = async (req, res) => {
+    try {
+        const { job_id, company_id, status } = req.query;
+
+        let query = `
+            SELECT a.application_id, a.status, a.applied_at, a.updated_at,
+                   u.user_id AS student_id, u.name AS student_name, u.email AS student_email,
+                   sp.roll_number, sp.branch, sp.cgpa, sp.backlogs, sp.phone,
+                   j.job_id, j.title AS job_title, j.package_lpa, j.location AS job_location,
+                   c.company_id, c.name AS company_name
+            FROM applications a
+            JOIN users u ON a.student_id = u.user_id
+            LEFT JOIN student_profiles sp ON u.user_id = sp.user_id
+            JOIN jobs j ON a.job_id = j.job_id
+            JOIN companies c ON j.company_id = c.company_id
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (job_id) {
+            query += ' AND a.job_id = ?';
+            params.push(parseInt(job_id, 10));
+        }
+
+        if (company_id) {
+            query += ' AND c.company_id = ?';
+            params.push(parseInt(company_id, 10));
+        }
+
+        if (status) {
+            query += ' AND a.status = ?';
+            params.push(status);
+        }
+
+        query += ' ORDER BY a.applied_at DESC;';
+
+        const [applications] = await pool.query(query, params);
+
+        res.status(200).json({
+            success: true,
+            count: applications.length,
+            applications
+        });
+    } catch (error) {
+        console.error('Error fetching all applications:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching applications',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Update status of an application (Applied, Shortlisted, Rejected)
+// @route   PUT /api/applications/:id/status
+// @access  Private (Admin Only)
+const updateApplicationStatus = async (req, res) => {
+    try {
+        const applicationId = parseInt(req.params.id, 10);
+        const { status } = req.body;
+
+        if (isNaN(applicationId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid application ID parameter'
+            });
+        }
+
+        // Validate allowed statuses
+        const ALLOWED_STATUSES = ['Applied', 'Shortlisted', 'Rejected'];
+        if (!status || !ALLOWED_STATUSES.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid application status "${status}". Allowed values: ${ALLOWED_STATUSES.join(', ')}`
+            });
+        }
+
+        // Check if application exists
+        const [existing] = await pool.query(
+            `SELECT a.application_id, a.status, a.student_id, a.job_id,
+                    u.name AS student_name, j.title AS job_title
+             FROM applications a
+             JOIN users u ON a.student_id = u.user_id
+             JOIN jobs j ON a.job_id = j.job_id
+             WHERE a.application_id = ?`,
+            [applicationId]
+        );
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Application not found with ID ${applicationId}`
+            });
+        }
+
+        // Update status in MySQL
+        await pool.query(
+            'UPDATE applications SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE application_id = ?',
+            [status, applicationId]
+        );
+
+        // Fetch updated record with all joined details
+        const [updated] = await pool.query(
+            `SELECT a.application_id, a.status, a.applied_at, a.updated_at,
+                    u.user_id AS student_id, u.name AS student_name, u.email AS student_email,
+                    sp.roll_number, sp.branch, sp.cgpa,
+                    j.job_id, j.title AS job_title, j.package_lpa,
+                    c.company_id, c.name AS company_name
+             FROM applications a
+             JOIN users u ON a.student_id = u.user_id
+             LEFT JOIN student_profiles sp ON u.user_id = sp.user_id
+             JOIN jobs j ON a.job_id = j.job_id
+             JOIN companies c ON j.company_id = c.company_id
+             WHERE a.application_id = ?`,
+            [applicationId]
+        );
+
+        res.status(200).json({
+            success: true,
+            message: `Application status updated to "${status}" successfully`,
+            application: updated[0]
+        });
+    } catch (error) {
+        console.error('Error updating application status:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating application status',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createApplication,
     checkJobEligibility,
     getMyApplications,
     getApplicationsByStudent,
-    getApplicationsByJob
+    getApplicationsByJob,
+    getAllApplications,
+    updateApplicationStatus
 };
+

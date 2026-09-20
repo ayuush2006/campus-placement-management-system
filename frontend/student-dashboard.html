@@ -21,6 +21,7 @@
             <a href="student-profile.html">👤 My Profile</a>
             <a href="jobs.html">💼 Available Jobs</a>
             <a href="applications.html">📝 My Applications</a>
+            <a href="admin-dashboard.html" style="color: #0d1b2a; font-weight: bold; background: #e9ecef;">🛡️ Admin Portal</a>
             <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
         </div>
     </nav>
@@ -67,6 +68,21 @@
             </div>
         </section>
 
+        <!-- ================================================================
+             PLACEMENT READINESS SCORE (Phase 6 - New Feature)
+             Rule-based scoring: CGPA + Backlogs + Phone + Resume + Applications + Shortlisting
+             NOT AI. Fully deterministic formula. Max 100 points.
+        ================================================================ -->
+        <section class="card" id="readiness-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>🎯 Placement Readiness Score</h2>
+                <small style="color: #666; font-style: italic;">Rule-based score — Not AI</small>
+            </div>
+            <div id="readiness-container">
+                <p style="color: #666; font-style: italic;">Loading readiness score...</p>
+            </div>
+        </section>
+
         <!-- Student Profile Summary -->
         <section class="card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -82,6 +98,21 @@
                     <div><strong>Active Backlogs:</strong> <span id="prof-backlogs">-</span></div>
                     <div><strong>Email:</strong> <span id="prof-email">-</span></div>
                 </div>
+            </div>
+        </section>
+
+        <!-- ================================================================
+             RECOMMENDED JOBS (Phase 6 - New Feature)
+             Rule-based match %: Branch(40%) + CGPA(35%) + Backlogs(25%)
+             Sorted highest match first. NOT AI / NOT ML.
+        ================================================================ -->
+        <section class="card" id="recommended-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>⭐ Recommended Jobs</h2>
+                <small style="color: #666; font-style: italic;">Sorted by match % — Rule-based, not AI</small>
+            </div>
+            <div id="recommended-container">
+                <p style="color: #666; font-style: italic;">Loading recommendations...</p>
             </div>
         </section>
 

@@ -418,3 +418,64 @@ th {
     color: #777777;
     font-size: 0.9rem;
 }
+
+/* ============================================================
+   Phase 6: Admin Module Styles
+   ============================================================ */
+
+/* Badge info (neutral) */
+.badge.info {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+/* Admin action shortlist button (green) */
+.btn.admin-shortlist {
+    background-color: #198754;
+}
+.btn.admin-shortlist:hover {
+    background-color: #157347;
+}
+
+/* Admin action reject button (red) */
+.btn.admin-reject {
+    background-color: #dc3545;
+}
+.btn.admin-reject:hover {
+    background-color: #b02a37;
+}
+
+/* Admin dark nav badge link */
+.nav-bar a.admin-link {
+    background: #e9ecef;
+    color: #0d1b2a;
+    font-weight: 700;
+}
+
+/* Textarea form control */
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Table row hover effect */
+tr:hover td {
+    background-color: #f8f9fa;
+}
+
+/* Admin modal border highlight */
+.admin-modal-section {
+    border: 2px solid #1e3c72;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* stats-grid support for 7 cards */
+@media (min-width: 600px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+}
+

@@ -12,7 +12,9 @@ const {
     updateStudent,
     getStudentProfile,
     updateStudentProfile,
-    getStudentDashboard
+    getStudentDashboard,
+    getReadinessScore,
+    getRecommendedJobs
 } = require('../controllers/studentController');
 
 const { authenticateToken } = require('../middleware/authMiddleware');
@@ -37,6 +39,14 @@ router.put('/profile', optionalAuth, updateStudentProfile);
 
 // GET /api/students/dashboard - Get complete student placement dashboard
 router.get('/dashboard', optionalAuth, getStudentDashboard);
+
+// GET /api/students/readiness-score - Rule-based placement readiness score (100 pts system)
+// Uses: CGPA, backlogs, phone, resume_url, applications, shortlisting — no AI, fully deterministic
+router.get('/readiness-score', optionalAuth, getReadinessScore);
+
+// GET /api/students/recommended-jobs - Rule-based job recommendations sorted by match %
+// Formula: Branch(40%) + CGPA(35%) + Backlogs(25%) — no AI, no ML, fully transparent
+router.get('/recommended-jobs', optionalAuth, getRecommendedJobs);
 
 // GET /api/students/:id - Get student details by ID (Authenticated)
 router.get('/:id', authenticateToken, getStudentById);

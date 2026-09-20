@@ -241,11 +241,16 @@ const updateJob = async (req, res) => {
         await pool.query(`UPDATE jobs SET ${updates.join(', ')} WHERE job_id = ?`, params);
 
         const [updatedRows] = await pool.query('SELECT * FROM jobs WHERE job_id = ?', [jobId]);
+        const updatedJob = updatedRows[0] ? {
+            ...updatedRows[0],
+            package_lpa: parseFloat(updatedRows[0].package_lpa),
+            minimum_cgpa: parseFloat(updatedRows[0].minimum_cgpa)
+        } : null;
 
         res.status(200).json({
             success: true,
             message: 'Job updated successfully',
-            job: updatedRows[0]
+            job: updatedJob
         });
     } catch (error) {
         console.error('Error updating job:', error.message);
@@ -277,6 +282,21 @@ const deleteJob = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: `Job not found with ID ${jobId}`
+            });
+        }
+
+        // Check if there are existing applications for this job
+        const [appCountResult] = await pool.query(
+            'SELECT COUNT(*) AS totalApps FROM applications WHERE job_id = ?',
+            [jobId]
+        );
+
+        const totalApps = appCountResult[0].totalApps || 0;
+        if (totalApps > 0 && req.query.force !== 'true') {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete job "${existing[0].title}" because ${totalApps} student(s) have already applied. Please review or resolve applications first, or provide ?force=true to force delete.`,
+                dependentApplicationsCount: totalApps
             });
         }
 

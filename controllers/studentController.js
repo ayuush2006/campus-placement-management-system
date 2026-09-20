@@ -397,11 +397,345 @@ const getStudentDashboard = async (req, res) => {
     }
 };
 
+
+// @desc    Calculate Placement Readiness Score for authenticated student
+// @route   GET /api/students/readiness-score
+// @access  Private (Student)
+//
+// RULE-BASED SCORE (Not AI / Not ML):
+// The score is calculated using a fixed formula based on profile completeness and academic performance.
+// Each criterion contributes a deterministic number of points — fully transparent and explainable.
+//
+// Scoring Table:
+//   CGPA (30 pts)        = (cgpa / 10) × 30  — normalized score based on CGPA out of 10
+//   Backlogs (20 pts)    = 20 if 0 backlogs, 10 if 1, 0 if 2+  — rewards clean academic record
+//   Phone (10 pts)       = 10 if phone number filled, 0 if missing
+//   Resume URL (20 pts)  = 20 if resume link uploaded, 0 if missing
+//   Applied (10 pts)     = 10 if applied to at least 1 job, 0 if no applications yet
+//   Shortlisted (10 pts) = 10 if shortlisted for at least 1 job, 0 otherwise
+//   TOTAL                = up to 100 points
+//
+const getReadinessScore = async (req, res) => {
+    try {
+        const studentId = req.user ? req.user.userId : req.query.studentId;
+
+        if (!studentId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required to view readiness score'
+            });
+        }
+
+        // 1. Fetch student profile data
+        const [rows] = await pool.query(
+            `SELECT u.user_id, u.name, sp.cgpa, sp.backlogs, sp.phone, sp.resume_url, sp.branch
+             FROM users u
+             JOIN student_profiles sp ON u.user_id = sp.user_id
+             WHERE u.user_id = ? AND u.role = 'student'`,
+            [studentId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student profile not found. Please complete your profile first.'
+            });
+        }
+
+        const student = rows[0];
+
+        // 2. Fetch application statistics for this student
+        const [appStats] = await pool.query(
+            `SELECT
+                COUNT(*) AS total_applications,
+                SUM(CASE WHEN status = 'Shortlisted' THEN 1 ELSE 0 END) AS shortlisted_count
+             FROM applications
+             WHERE student_id = ?`,
+            [studentId]
+        );
+
+        const totalApplications = parseInt(appStats[0].total_applications, 10) || 0;
+        const shortlistedCount = parseInt(appStats[0].shortlisted_count, 10) || 0;
+
+        // =========================================================
+        // RULE-BASED SCORING ALGORITHM
+        // Each criterion is evaluated independently using a fixed rule.
+        // No randomness. No external model. Fully deterministic.
+        // =========================================================
+
+        // Criterion 1: CGPA Score (30 points)
+        // Formula: (cgpa / 10) × 30, rounded to 1 decimal
+        // Example: CGPA 8.5 → (8.5 / 10) × 30 = 25.5 → floored to 25
+        const cgpaValue = parseFloat(student.cgpa) || 0;
+        const cgpaScore = Math.floor((Math.min(cgpaValue, 10) / 10) * 30);
+
+        // Criterion 2: Backlogs Score (20 points)
+        // Rule: 0 backlogs = full marks, 1 backlog = half, 2+ = 0
+        const backlogs = parseInt(student.backlogs, 10) || 0;
+        let backlogScore = 0;
+        if (backlogs === 0) backlogScore = 20;
+        else if (backlogs === 1) backlogScore = 10;
+        else backlogScore = 0;
+
+        // Criterion 3: Phone Number Filled (10 points)
+        // Rule: Profile must have a phone number
+        const phoneScore = student.phone && student.phone.trim() !== '' ? 10 : 0;
+
+        // Criterion 4: Resume URL Uploaded (20 points)
+        // Rule: Profile must have a resume/portfolio link
+        const resumeScore = student.resume_url && student.resume_url.trim() !== '' ? 20 : 0;
+
+        // Criterion 5: Applied to Jobs (10 points)
+        // Rule: At least 1 job application submitted
+        const appliedScore = totalApplications > 0 ? 10 : 0;
+
+        // Criterion 6: Shortlisted (10 points)
+        // Rule: At least 1 shortlisting achieved
+        const shortlistScore = shortlistedCount > 0 ? 10 : 0;
+
+        // Final Total Score (max 100)
+        const totalScore = cgpaScore + backlogScore + phoneScore + resumeScore + appliedScore + shortlistScore;
+
+        // Build explanatory messages for each criterion
+        const breakdown = {
+            cgpa: {
+                points: cgpaScore,
+                maxPoints: 30,
+                value: cgpaValue.toFixed(2),
+                message: `CGPA ${cgpaValue.toFixed(2)}/10 → ${cgpaScore}/30 points`
+            },
+            backlogs: {
+                points: backlogScore,
+                maxPoints: 20,
+                value: backlogs,
+                message: backlogs === 0
+                    ? 'No active backlogs → 20/20 points (Clean academic record!)'
+                    : backlogs === 1
+                        ? '1 active backlog → 10/20 points (Clear it for full marks)'
+                        : `${backlogs} backlogs → 0/20 points (Clear backlogs to improve score)`
+            },
+            phone: {
+                points: phoneScore,
+                maxPoints: 10,
+                value: student.phone ? 'Provided' : 'Missing',
+                message: phoneScore > 0 ? 'Phone number provided → 10/10 points' : 'Phone number missing → 0/10 points (Add phone to profile)'
+            },
+            resume: {
+                points: resumeScore,
+                maxPoints: 20,
+                value: student.resume_url ? 'Uploaded' : 'Missing',
+                message: resumeScore > 0 ? 'Resume URL uploaded → 20/20 points' : 'Resume URL missing → 0/20 points (Upload your resume link to profile)'
+            },
+            applied: {
+                points: appliedScore,
+                maxPoints: 10,
+                value: totalApplications,
+                message: appliedScore > 0 ? `Applied to ${totalApplications} job(s) → 10/10 points` : 'No applications yet → 0/10 points (Apply to a job to earn these points)'
+            },
+            shortlisted: {
+                points: shortlistScore,
+                maxPoints: 10,
+                value: shortlistedCount,
+                message: shortlistScore > 0 ? `Shortlisted in ${shortlistedCount} job(s) → 10/10 points 🎉` : 'Not yet shortlisted → 0/10 points (Keep applying!)'
+            }
+        };
+
+        // Grade classification
+        let grade = '';
+        let gradeColor = '';
+        if (totalScore >= 85) { grade = 'Excellent 🚀'; gradeColor = '#198754'; }
+        else if (totalScore >= 70) { grade = 'Good 👍'; gradeColor = '#0d6efd'; }
+        else if (totalScore >= 50) { grade = 'Average 📈'; gradeColor = '#ffc107'; }
+        else { grade = 'Needs Improvement ⚠️'; gradeColor = '#dc3545'; }
+
+        res.status(200).json({
+            success: true,
+            studentName: student.name,
+            score: totalScore,
+            maxScore: 100,
+            grade,
+            gradeColor,
+            breakdown,
+            tips: totalScore < 100 ? [
+                !student.phone ? '📱 Add your phone number to your profile (+10 pts)' : null,
+                !student.resume_url ? '📄 Upload your resume/portfolio link (+20 pts)' : null,
+                backlogs > 0 ? `📚 Clear your ${backlogs} active backlog(s) (+${backlogs === 1 ? 10 : 20} pts)` : null,
+                totalApplications === 0 ? '🚀 Apply to at least one job opening (+10 pts)' : null,
+                shortlistedCount === 0 ? '🎯 Get shortlisted to earn bonus points (+10 pts)' : null
+            ].filter(Boolean) : ['🎉 Perfect Score! Keep it up!']
+        });
+
+    } catch (error) {
+        console.error('Error calculating readiness score:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while calculating placement readiness score',
+            error: error.message
+        });
+    }
+};
+
+// @desc    Get recommended jobs sorted by match score for authenticated student
+// @route   GET /api/students/recommended-jobs
+// @access  Private (Student)
+//
+// RULE-BASED RECOMMENDATION SYSTEM (Not AI / Not ML):
+// For each available job, a match % is computed using a weighted formula.
+// Weights are fixed and transparent — no hidden model, no training, no randomness.
+//
+// Match Score Formula:
+//   Branch Match (40%)  = 100 if student branch is in job's allowed_branch, else 0
+//   CGPA Score   (35%)  = min(student_cgpa / job_min_cgpa, 1.0) × 100 (capped at 100)
+//   Backlog Score(25%)  = 100 if student.backlogs <= job.max_backlogs, else 0
+//
+// Final Match % = (0.40 × branchScore) + (0.35 × cgpaScore) + (0.25 × backlogScore)
+// Jobs are sorted descending by match %.
+//
+const getRecommendedJobs = async (req, res) => {
+    try {
+        const studentId = req.user ? req.user.userId : req.query.studentId;
+
+        if (!studentId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required to view recommended jobs'
+            });
+        }
+
+        // 1. Fetch student profile
+        const [studentRows] = await pool.query(
+            `SELECT u.user_id, u.name, sp.cgpa, sp.backlogs, sp.branch
+             FROM users u
+             JOIN student_profiles sp ON u.user_id = sp.user_id
+             WHERE u.user_id = ? AND u.role = 'student'`,
+            [studentId]
+        );
+
+        if (studentRows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Student profile not found'
+            });
+        }
+
+        const student = studentRows[0];
+
+        // 2. Fetch all available jobs with company info
+        const [allJobs] = await pool.query(
+            `SELECT j.job_id, j.title, j.description, j.package_lpa, j.location,
+                    j.minimum_cgpa, j.allowed_branch, j.maximum_backlogs, j.deadline,
+                    c.company_id, c.name AS company_name, c.website AS company_website
+             FROM jobs j
+             JOIN companies c ON j.company_id = c.company_id
+             ORDER BY j.created_at DESC`
+        );
+
+        // 3. Fetch the student's applied job IDs to mark them
+        const [appliedRows] = await pool.query(
+            'SELECT job_id, status FROM applications WHERE student_id = ?',
+            [studentId]
+        );
+        const appliedMap = {};
+        appliedRows.forEach(a => { appliedMap[a.job_id] = a.status; });
+
+        // 4. Check eligibility + compute match score for each job
+        const { checkEligibility } = require('../utils/eligibilityHelper');
+
+        const studentCgpa = parseFloat(student.cgpa) || 0;
+        const studentBacklogs = parseInt(student.backlogs, 10) || 0;
+        const studentBranch = (student.branch || '').trim().toUpperCase();
+
+        const recommendedJobs = allJobs.map(job => {
+            const minCgpa = parseFloat(job.minimum_cgpa) || 0;
+            const maxBacklogs = parseInt(job.maximum_backlogs, 10) || 0;
+            const rawAllowed = (job.allowed_branch || '').trim().toUpperCase();
+
+            // --- Branch Match Score (40% weight) ---
+            // 100 if student branch is allowed, 0 if not
+            let branchScore = 0;
+            if (rawAllowed === 'ALL') {
+                branchScore = 100;
+            } else {
+                const allowedBranches = rawAllowed.split(',').map(b => b.trim());
+                branchScore = allowedBranches.includes(studentBranch) ? 100 : 0;
+            }
+
+            // --- CGPA Score (35% weight) ---
+            // Ratio of student CGPA to required CGPA, capped at 100
+            // If job has no CGPA requirement (0), full score
+            let cgpaMatchScore = 0;
+            if (minCgpa === 0) {
+                cgpaMatchScore = 100;
+            } else {
+                cgpaMatchScore = Math.min((studentCgpa / minCgpa) * 100, 100);
+            }
+
+            // --- Backlog Score (25% weight) ---
+            // Full marks if student has <= max allowed backlogs
+            const backlogMatchScore = studentBacklogs <= maxBacklogs ? 100 : 0;
+
+            // --- Weighted Final Match % ---
+            const matchPercent = Math.round(
+                (0.40 * branchScore) + (0.35 * cgpaMatchScore) + (0.25 * backlogMatchScore)
+            );
+
+            // Check full eligibility using the existing eligibility engine
+            const eligibility = checkEligibility(student, job);
+
+            // Determine match label
+            let matchLabel = '';
+            if (matchPercent >= 80) matchLabel = 'High Match 🔥';
+            else if (matchPercent >= 50) matchLabel = 'Medium Match 👍';
+            else matchLabel = 'Low Match';
+
+            return {
+                ...job,
+                matchPercent,
+                matchLabel,
+                branchScore: Math.round(branchScore),
+                cgpaMatchScore: Math.round(cgpaMatchScore),
+                backlogMatchScore: Math.round(backlogMatchScore),
+                isEligible: eligibility.eligible,
+                eligibilityReasons: eligibility.reasons,
+                hasApplied: !!appliedMap[job.job_id],
+                applicationStatus: appliedMap[job.job_id] || null
+            };
+        });
+
+        // 5. Sort by match % descending (highest match first)
+        recommendedJobs.sort((a, b) => b.matchPercent - a.matchPercent);
+
+        res.status(200).json({
+            success: true,
+            studentName: student.name,
+            studentProfile: {
+                branch: student.branch,
+                cgpa: studentCgpa,
+                backlogs: studentBacklogs
+            },
+            count: recommendedJobs.length,
+            jobs: recommendedJobs,
+            algorithmNote: 'Match % is calculated using a deterministic weighted formula: Branch(40%) + CGPA(35%) + Backlogs(25%). This is rule-based, not AI.'
+        });
+
+    } catch (error) {
+        console.error('Error fetching recommended jobs:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while fetching recommended jobs',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createStudent,
     getStudentById,
     updateStudent,
     getStudentProfile,
     updateStudentProfile,
-    getStudentDashboard
+    getStudentDashboard,
+    getReadinessScore,
+    getRecommendedJobs
 };
+

@@ -9,6 +9,7 @@
     "test:api": "node test/test-apis.js",
     "test:auth": "node test/test-auth.js",
     "test:student": "node test/test-student.js",
+    "test:admin": "node test/test-admin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

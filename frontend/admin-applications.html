@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Student Applications - Admin Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header" style="background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">Applicant Review, Shortlisting & Status Workflow</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html">🏠 Home</a>
+            <a href="admin-dashboard.html">📊 Admin Dashboard</a>
+            <a href="admin-companies.html">🏢 Companies</a>
+            <a href="admin-jobs.html">💼 Job Drives</a>
+            <a href="admin-applications.html" class="active">👥 Applications</a>
+            <a href="student-dashboard.html" style="color: #0d6efd;">🎓 Student Portal</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Access Guard -->
+        <div id="admin-access-guard" style="display: none;"></div>
+
+        <!-- Filter & Search Toolbar -->
+        <section class="card">
+            <h2>🔍 Filter Applications (<span id="applications-count">0</span> Total)</h2>
+            <p style="margin-bottom: 1rem; color: #666;">Filter applicant records by placement opening, visiting company, status, or search by student credentials:</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filter-app-search">Search Student:</label>
+                    <input type="text" id="filter-app-search" class="form-control" placeholder="Search name, email, roll...">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filter-app-job">Filter by Job Opening:</label>
+                    <select id="filter-app-job" class="form-control">
+                        <option value="">All Jobs</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="filter-app-company">Filter by Company:</label>
+                    <select id="filter-app-company" class="form-control">
+                        <option value="">All Companies</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Status Filter Tabs -->
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                <button id="status-all" class="btn" onclick="setAppStatusFilter('ALL')" style="font-size: 0.82rem; padding: 0.35rem 0.8rem;">All Statuses</button>
+                <button id="status-applied" class="btn secondary" onclick="setAppStatusFilter('Applied')" style="font-size: 0.82rem; padding: 0.35rem 0.8rem;">⏳ Under Review</button>
+                <button id="status-shortlisted" class="btn secondary" onclick="setAppStatusFilter('Shortlisted')" style="font-size: 0.82rem; padding: 0.35rem 0.8rem;">🎉 Shortlisted</button>
+                <button id="status-rejected" class="btn secondary" onclick="setAppStatusFilter('Rejected')" style="font-size: 0.82rem; padding: 0.35rem 0.8rem;">❌ Rejected</button>
+            </div>
+        </section>
+
+        <!-- Applications Management Table -->
+        <section class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Details</th>
+                            <th>Academic Profile</th>
+                            <th>Company</th>
+                            <th>Job Role & CTC</th>
+                            <th>Applied Date</th>
+                            <th>Current Status</th>
+                            <th>Status Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-applications-tbody">
+                        <tr>
+                            <td colspan="8" style="text-align: center;">Loading student applications...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Application Review & Shortlisting</p>
+        </div>
+    </footer>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

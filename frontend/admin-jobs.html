@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Placement Jobs - Admin Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header" style="background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 100%);">
+        <div class="container">
+            <h1>Campus Placement Management System</h1>
+            <p class="subtitle">Job Drives, Eligibility Criteria & Openings Management</p>
+        </div>
+    </header>
+
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html">🏠 Home</a>
+            <a href="admin-dashboard.html">📊 Admin Dashboard</a>
+            <a href="admin-companies.html">🏢 Companies</a>
+            <a href="admin-jobs.html" class="active">💼 Job Drives</a>
+            <a href="admin-applications.html">👥 Applications</a>
+            <a href="student-dashboard.html" style="color: #0d6efd;">🎓 Student Portal</a>
+            <a href="#" onclick="logout()" style="color: #dc3545; margin-left: auto;">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Access Guard -->
+        <div id="admin-access-guard" style="display: none;"></div>
+
+        <!-- Action Bar: Add Job & Search -->
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2>💼 Campus Placement Job Drives</h2>
+                    <p style="margin: 0; color: #666;">Create job openings, configure eligibility rules (CGPA, Branch, Backlogs), and manage drives.</p>
+                </div>
+                <button class="btn success" onclick="openAddJobModal()">
+                    ➕ Post New Job Opening
+                </button>
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+                <input type="text" id="filter-job-search" class="form-control" placeholder="🔍 Search openings by job title or company name...">
+            </div>
+        </section>
+
+        <!-- Job Add / Edit Modal -->
+        <div id="job-modal" style="display: none; margin-bottom: 1.5rem;">
+            <section class="card" style="border: 2px solid #1e3c72; background: #ffffff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 id="job-modal-title" style="color: #1e3c72; margin: 0;">💼 Post New Campus Placement Drive</h3>
+                    <button class="btn secondary" onclick="closeJobModal()" style="font-size: 0.8rem; padding: 0.2rem 0.6rem;">✕ Close</button>
+                </div>
+
+                <form id="job-form">
+                    <input type="hidden" id="job-form-id">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label for="job-form-company">Visiting Company *</label>
+                            <select id="job-form-company" class="form-control" required>
+                                <option value="">-- Select Company --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="job-form-title">Job Role / Title *</label>
+                            <input type="text" id="job-form-title" class="form-control" required placeholder="e.g. SDE-1 / Data Analyst">
+                        </div>
+                        <div class="form-group">
+                            <label for="job-form-package">Package CTC (₹ LPA) *</label>
+                            <input type="number" step="0.01" min="0" id="job-form-package" class="form-control" required placeholder="e.g. 12.50">
+                        </div>
+                        <div class="form-group">
+                            <label for="job-form-location">Job Location</label>
+                            <input type="text" id="job-form-location" class="form-control" placeholder="e.g. Bengaluru / Pune">
+                        </div>
+                    </div>
+
+                    <h4 style="color: #1e3c72; margin: 1.25rem 0 0.5rem 0; font-size: 1rem;">🎯 Eligibility Criteria Definition</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label for="job-form-min-cgpa">Minimum CGPA (0.0 - 10.0) *</label>
+                            <input type="number" step="0.01" min="0" max="10" id="job-form-min-cgpa" class="form-control" required value="7.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="job-form-branches">Allowed Branches * (comma separated)</label>
+                            <input type="text" id="job-form-branches" class="form-control" required value="CSE,IT,ECE" placeholder="e.g. CSE,IT or ALL">
+                        </div>
+                        <div class="form-group">
+                            <label for="job-form-max-backlogs">Maximum Backlogs Allowed *</label>
+                            <input type="number" min="0" max="10" id="job-form-max-backlogs" class="form-control" required value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="job-form-deadline">Application Deadline *</label>
+                            <input type="date" id="job-form-deadline" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                        <label for="job-form-description">Job Description & Responsibilities</label>
+                        <textarea id="job-form-description" class="form-control" rows="3" placeholder="Key skills, responsibilities, interview rounds..."></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="submit" class="btn success">💾 Save Job Drive</button>
+                        <button type="button" class="btn secondary" onclick="closeJobModal()">Cancel</button>
+                    </div>
+                    <div id="job-modal-msg" style="margin-top: 0.75rem;"></div>
+                </form>
+            </section>
+        </div>
+
+        <!-- Jobs Table -->
+        <section class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Role & Location</th>
+                            <th>Package</th>
+                            <th>Eligibility Criteria</th>
+                            <th>Deadline</th>
+                            <th>Applicants</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-jobs-tbody">
+                        <tr>
+                            <td colspan="7" style="text-align: center;">Loading job drives...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Campus Placement Management System - Job Management</p>
+        </div>
+    </footer>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
